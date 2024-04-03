@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 [ApiController]
-[Route("api/StackOverflowTags")]
+[Route("api/so/tags")]
 public class StackOverflowTagController : ControllerBase
 {
     private readonly StackOverflowAPIService _stackOverflowAPIService;
@@ -16,10 +16,10 @@ public class StackOverflowTagController : ControllerBase
         /*SaveTagsIntoDatabase(1000);*/
     }
 
-    [HttpGet("SaveTagsIntoDatabase {tagsCount}")]
-    public async Task<IActionResult> SaveTagsIntoDatabase(int tagsCount = 1000)
+    [HttpGet("{count}")]
+    public async Task<IActionResult> SaveTagsIntoDatabase(int count = 1000)
     {
-        var tags = await _stackOverflowAPIService.GetTagsFromApiAsync(1, tagsCount);
+        var tags = await _stackOverflowAPIService.GetTagsFromApiAsync(1, count);
         _dbContext.AddTags(tags);
         await _dbContext.SaveChangesAsync();
 

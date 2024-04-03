@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using static PostgresDatabaseService;
 
 [ApiController]
-[Route("api/DatabaseTags")]
+[Route("api/db/tags")]
 public class DatabaseTagController : ControllerBase
 {
     private readonly PostgresDatabaseService _dbContext;
@@ -14,23 +14,23 @@ public class DatabaseTagController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpGet("GetPercentageOfTags {page} {pageSize}")]
-    public async Task<IActionResult> GetTagsAsync(int page = 1, int pageSize = 100)
+    [HttpGet("count {page} {size}")]
+    public async Task<IActionResult> GetTagsAsync(int page = 1, int size = 100)
     {
-        var tags = _dbContext.GetPercentageOfTags(page, pageSize);
+        var tags = _dbContext.GetPercentageOfTags(page, size);
 
         return Ok(tags);
     }
 
-    [HttpGet("GetTags {page} {pageSize} {sortBy} {sortDescending}")]
-    public async Task<IActionResult> GetTagsAsync(int page = 1, int pageSize = 100, string sortBy = "id", bool sortDescending = false)
+    [HttpGet("{page} {size} {sort} {direction}")]
+    public async Task<IActionResult> GetTagsAsync(int page = 1, int size = 100, string sort = "id", bool direction = false)
     {
-        var sortingType = sortDescending ? SortingType.desc : SortingType.asc;
+        var sortingType = direction ? SortingType.desc : SortingType.asc;
         var sortByColumn = TagColumn.id;
-        if (Enum.TryParse<TagColumn>(sortBy, out var result))
+        if (Enum.TryParse<TagColumn>(sort, out var result))
             sortByColumn = result;
 
-        var tags = _dbContext.GetTags(page, pageSize, sortByColumn, sortingType);
+        var tags = _dbContext.GetTags(page, size, sortByColumn, sortingType);
 
         return Ok(tags);
     }
