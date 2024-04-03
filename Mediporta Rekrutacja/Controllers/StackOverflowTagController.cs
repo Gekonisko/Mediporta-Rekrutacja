@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Linq;
-using System.Threading.Tasks;
 
 [ApiController]
 [Route("api/so/tags")]
@@ -8,20 +6,32 @@ public class StackOverflowTagController : ControllerBase
 {
     private readonly StackOverflowAPIService _stackOverflowAPIService;
     private readonly PostgresDatabaseService _dbContext;
+    private readonly ILogger<DatabaseTagController> _logger;
 
-    public StackOverflowTagController(StackOverflowAPIService stackOverflowAPIService, PostgresDatabaseService dbContext)
+    public StackOverflowTagController(StackOverflowAPIService stackOverflowAPIService, PostgresDatabaseService dbContext, ILogger<DatabaseTagController> logger)
     {
         _stackOverflowAPIService = stackOverflowAPIService;
         _dbContext = dbContext;
+        _logger = logger;
         /*SaveTagsIntoDatabase(1000);*/
     }
 
     [HttpGet("{size}")]
     public async Task<IActionResult> SaveTagsIntoDatabase(int size = 1000)
     {
-        var tags = await _stackOverflowAPIService.GetTags(1, size);
-        await _dbContext.CreateTagTable(tags);
+        _logger.Log(LogLevel.Debug, $"api/so/tags size={size}");
 
-        return Ok(tags);
+        try
+        {
+            var tags = await _stackOverflowAPIService.GetTags(1, size);
+            await _dbContext.CreateTagTable(tags);
+            return Ok(tags);
+
+        }
+        catch
+        {
+            _logger.LogError("Failed to save tags into database");
+        }
+        return BadRequest();
     }
 }

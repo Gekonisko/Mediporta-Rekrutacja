@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using Microsoft.Extensions.Logging;
+using Moq;
 using System.Net;
 using Assert = Xunit.Assert;
 
@@ -12,12 +13,14 @@ namespace Mediporta_Rekrutacja.Tests
 
         public UnitTest_PostgresDatabaseService()
         {
-            postgresDatabaseService = new PostgresDatabaseService();
+            postgresDatabaseService = new PostgresDatabaseService(
+                new Mock<ILogger<PostgresDatabaseService>>().Object);
             mockHttpClient = new Mock<HttpClient>(new HttpClientHandler
             {
                 AutomaticDecompression = DecompressionMethods.GZip
             });
-            stackOverflowAPIService = new StackOverflowAPIService(mockHttpClient.Object);
+            stackOverflowAPIService = new StackOverflowAPIService(mockHttpClient.Object,
+                new Mock<ILogger<StackOverflowAPIService>>().Object);
         }
 
         [Fact]

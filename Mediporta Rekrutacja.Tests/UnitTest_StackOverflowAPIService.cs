@@ -1,5 +1,5 @@
 ﻿using Moq;
-using NUnit.Framework;
+using Microsoft.Extensions.Logging;
 using System.Net;
 using Assert = Xunit.Assert;
 
@@ -16,7 +16,7 @@ namespace Mediporta_Rekrutacja.Tests
             {
                 AutomaticDecompression = DecompressionMethods.GZip
             });
-            stackOverflowAPIService = new StackOverflowAPIService(mockHttpClient.Object);
+            stackOverflowAPIService = new StackOverflowAPIService(mockHttpClient.Object, new Mock<ILogger<StackOverflowAPIService>>().Object);
         }
 
         [Fact]
