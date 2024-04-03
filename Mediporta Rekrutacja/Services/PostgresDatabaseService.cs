@@ -2,13 +2,16 @@
 
 public class PostgresDatabaseService
 {
-    public readonly string ConnectionString = "Host=localhost;Username=admin;Password=password;Database=admin";
     private readonly ILogger<PostgresDatabaseService> _logger;
+    private readonly DatabaseSettings _databaseSettings = new DatabaseSettings();
+    private readonly IConfiguration _configuration;
 
-
-    public PostgresDatabaseService(ILogger<PostgresDatabaseService> logger)
+    public PostgresDatabaseService(IConfiguration configuration, ILogger<PostgresDatabaseService> logger)
     {
+        _configuration = configuration;
         _logger = logger;
+
+        InitDatabaseSettings(_configuration);
     }
 
     public async Task CreateTagTable(List<StackOverflowTag> tags)
@@ -16,7 +19,7 @@ public class PostgresDatabaseService
         _logger.Log(LogLevel.Information, "CreateTagTable");
         try
         {
-            using (var conn = NpgsqlDataSource.Create(ConnectionString))
+            using (var conn = NpgsqlDataSource.Create(GetConnectionUrl()))
             {
                 await conn.OpenConnectionAsync();
                 _logger.Log(LogLevel.Information, "Connected to database");
@@ -56,7 +59,7 @@ public class PostgresDatabaseService
         List<PercentageOfTags> tags = [];
         try
         {
-            using (var conn = NpgsqlDataSource.Create(ConnectionString))
+            using (var conn = NpgsqlDataSource.Create(GetConnectionUrl()))
             {
                 conn.OpenConnectionAsync();
                 _logger.Log(LogLevel.Information, "Connected to database");
@@ -95,7 +98,7 @@ public class PostgresDatabaseService
         List<StackOverflowTag> tags = [];
         try
         {
-            using (var conn = NpgsqlDataSource.Create(ConnectionString))
+            using (var conn = NpgsqlDataSource.Create(GetConnectionUrl()))
             {
                 conn.OpenConnectionAsync();
 
@@ -124,6 +127,18 @@ public class PostgresDatabaseService
         }
 
         return tags;
+    }
+
+    private string GetConnectionUrl()
+    {
+        return $"Host={_databaseSettings.Server};Username={_databaseSettings.Username};Password={_databaseSettings.Password};Database={_databaseSettings.Database}";
+    }
+    private void InitDatabaseSettings(IConfiguration configuration)
+    {
+        _databaseSettings.Server = configuration["POSTGRES_HOST"];
+        _databaseSettings.Database = configuration["POSTGRES_DATABASE"];
+        _databaseSettings.Username = configuration["POSTGRES_USERNAME"];
+        _databaseSettings.Password = configuration["POSTGRES_PASSWORD"];
     }
 }
 

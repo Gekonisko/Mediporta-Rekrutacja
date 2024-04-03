@@ -16,8 +16,8 @@ public class StackOverflowTagController : ControllerBase
         /*SaveTagsIntoDatabase(1000);*/
     }
 
-    [HttpGet("{size}")]
-    public async Task<IActionResult> SaveTagsIntoDatabase(int size = 1000)
+    [HttpGet()]
+    public async Task<IActionResult> SaveTagsIntoDatabase([FromQuery(Name = "size")] int size = 1000)
     {
         _logger.Log(LogLevel.Debug, $"api/so/tags size={size}");
 

@@ -14,15 +14,14 @@ public class DatabaseTagController : ControllerBase
         _logger = logger;
     }
 
-    [HttpGet("count {page} {size}")]
-    public async Task<IActionResult> GetCountAsync(int page = 1, int size = 20)
+    [HttpGet("count")]
+    public async Task<IActionResult> GetCountAsync([FromQuery(Name = "page")] int page = 1, [FromQuery(Name = "size")] int size = 20)
     {
         _logger.Log(LogLevel.Information, $"api/db/tags/count page={page} size={size}");
         try
         {
             var tags = _dbContext.GetPercentageOfTags(page, size);
             return Ok(tags);
-
         }
         catch 
         {
@@ -31,8 +30,8 @@ public class DatabaseTagController : ControllerBase
         return BadRequest();
     }
 
-    [HttpGet("{page} {size} {sort} {direction}")]
-    public async Task<IActionResult> GetTagsAsync(int page = 1, int size = 20, string sort = "id", string direction = "asc")
+    [HttpGet("")]
+    public async Task<IActionResult> GetTagsAsync([FromQuery(Name = "page")] int page = 1, [FromQuery(Name = "size")] int size = 20, [FromQuery(Name = "sort")] string sort = "id", [FromQuery(Name = "direction")] string direction = "asc")
     {
         _logger.Log(LogLevel.Information ,$"api/db/tags page={page} size={size} sort={sort} direction={direction}");
 
