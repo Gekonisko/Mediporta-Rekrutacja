@@ -9,7 +9,3 @@ public class StackOverflowTag
     public int Count { get; set; }
 }
 
-public class PercentageOfTags : StackOverflowTag
-{
-    public double Percentage { get; set; }
-}

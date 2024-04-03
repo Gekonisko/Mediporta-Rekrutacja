@@ -18,24 +18,24 @@ public class StackOverflowAPIService
         _httpClient = httpClient;
     }
 
-    public async Task<List<StackOverflowTag>> GetTagsFromApiAsync(int page = 1, int pageSize = 1000)
+    public async Task<List<StackOverflowTag>> GetTags(int page = 1, int size = 1000)
     {
-        var requests = (int)Math.Ceiling(pageSize / 100.0);
+        var requests = (int)Math.Ceiling(size / 100.0);
 
-        var tagsTasks = new Task<List<StackOverflowTag>>[requests];
+        var tasks = new Task<List<StackOverflowTag>>[requests];
 
         for(int i = 0; i < requests - 1; i++) 
         {
-            tagsTasks[i] = GetTagsAsync(page + i, _maxPageSize);
+            tasks[i] = GetTagsPageAsync(page + i, _maxPageSize);
         }
 
-        var rest = pageSize - ((requests - 1) * _maxPageSize);
-        tagsTasks[requests - 1] = GetTagsAsync(requests, rest);
+        var rest = size - ((requests - 1) * _maxPageSize);
+        tasks[requests - 1] = GetTagsPageAsync(requests, rest);
 
-        await Task.WhenAll(tagsTasks);
+        await Task.WhenAll(tasks);
 
         var tags = new List<StackOverflowTag>();
-        foreach (var task in tagsTasks)
+        foreach (var task in tasks)
         {
             tags.AddRange(await task);
         }
@@ -43,27 +43,34 @@ public class StackOverflowAPIService
         return tags;
     }
 
-    private async Task<List<StackOverflowTag>> GetTagsAsync(int page, int pageSize)
+    private async Task<List<StackOverflowTag>> GetTagsPageAsync(int page, int pageSize)
     {
         var tags = new List<StackOverflowTag>();
 
-        var response = await _httpClient.GetAsync($"https://api.stackexchange.com/2.3/tags?page={page}&pagesize={pageSize}&order=desc&sort=popular&site=stackoverflow");
-
-        if (response.IsSuccessStatusCode)
+        try
         {
-            var content = await response.Content.ReadAsStringAsync();
+            var response = await _httpClient.GetAsync($"https://api.stackexchange.com/2.3/tags?page={page}&pagesize={pageSize}&order=desc&sort=popular&site=stackoverflow");
 
-            var result = JsonConvert.DeserializeObject<StackOverflowApiResponse>(content);
-
-            tags.AddRange(result.Items.Select(item => new StackOverflowTag
+            if (response.IsSuccessStatusCode)
             {
-                Name = item.Name,
-                Count = item.Count
-            }));
+                var content = await response.Content.ReadAsStringAsync();
+
+                var result = JsonConvert.DeserializeObject<StackOverflowApiResponse>(content);
+
+                tags.AddRange(result.Items.Select(item => new StackOverflowTag
+                {
+                    Name = item.Name,
+                    Count = item.Count
+                }));
+            }
+            else
+            {
+                throw new Exception("Failed to retrieve tags from StackOverflow API.");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            throw new Exception("Failed to retrieve tags from StackOverflow API.");
+            throw new Exception($"Failed to retrieve tags {ex.Message}");
         }
 
         return tags;

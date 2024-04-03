@@ -3,6 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using System.Net;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using NLog;
+using NLog.Web;
+
+// Early init of NLog to allow startup and exception logging, before host is built
+var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
+logger.Debug("init main");
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,11 +34,6 @@ builder.Services.AddHttpClient<StackOverflowAPIService>().ConfigurePrimaryHttpMe
 });
 
 builder.Services.AddSingleton<PostgresDatabaseService>();
-/*
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-*/
-
 
 
 var app = builder.Build();

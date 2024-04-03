@@ -9,13 +9,13 @@ public class DatabaseTagController : ControllerBase
 {
     private readonly PostgresDatabaseService _dbContext;
 
-    public DatabaseTagController( PostgresDatabaseService dbContext)
+    public DatabaseTagController(PostgresDatabaseService dbContext)
     {
         _dbContext = dbContext;
     }
 
     [HttpGet("count {page} {size}")]
-    public async Task<IActionResult> GetTagsAsync(int page = 1, int size = 100)
+    public async Task<IActionResult> GetTagsAsync(int page = 1, int size = 20)
     {
         var tags = _dbContext.GetPercentageOfTags(page, size);
 
@@ -23,16 +23,19 @@ public class DatabaseTagController : ControllerBase
     }
 
     [HttpGet("{page} {size} {sort} {direction}")]
-    public async Task<IActionResult> GetTagsAsync(int page = 1, int size = 100, string sort = "id", bool direction = false)
+    public async Task<IActionResult> GetTagsAsync(int page = 1, int size = 20, string sort = "id", bool direction = false)
     {
         var sortingType = direction ? SortingType.desc : SortingType.asc;
-        var sortByColumn = TagColumn.id;
-        if (Enum.TryParse<TagColumn>(sort, out var result))
-            sortByColumn = result;
+        if (Enum.TryParse<TagColumn>(sort, out var sortByColumn))
+        {
+            var tags = _dbContext.GetTags(page, size, sortByColumn, sortingType);
 
-        var tags = _dbContext.GetTags(page, size, sortByColumn, sortingType);
+            return Ok(tags);
+        }
 
-        return Ok(tags);
+        return BadRequest();
+
+        
     }
 
 }

@@ -16,12 +16,11 @@ public class StackOverflowTagController : ControllerBase
         /*SaveTagsIntoDatabase(1000);*/
     }
 
-    [HttpGet("{count}")]
-    public async Task<IActionResult> SaveTagsIntoDatabase(int count = 1000)
+    [HttpGet("{size}")]
+    public async Task<IActionResult> SaveTagsIntoDatabase(int size = 1000)
     {
-        var tags = await _stackOverflowAPIService.GetTagsFromApiAsync(1, count);
-        _dbContext.AddTags(tags);
-        await _dbContext.SaveChangesAsync();
+        var tags = await _stackOverflowAPIService.GetTags(1, size);
+        await _dbContext.CreateTagTable(tags);
 
         return Ok(tags);
     }
