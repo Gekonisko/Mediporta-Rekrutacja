@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS tag (
+    Id SERIAL PRIMARY KEY,
+    Name VARCHAR(255),
+    Count INTEGER
+);
