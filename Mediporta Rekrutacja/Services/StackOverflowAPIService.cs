@@ -18,7 +18,7 @@ public class StackOverflowAPIService
     {
         _logger.Log(LogLevel.Information, $"GetTags page={page} size={size}");
 
-        var requests = (int)Math.Ceiling(size / 100.0);
+        var requests = (int)Math.Ceiling(size / (double)_maxPageSize);
 
         var tasks = new Task<List<StackOverflowTag>>[requests];
 
@@ -28,7 +28,8 @@ public class StackOverflowAPIService
         }
 
         var rest = size - ((requests - 1) * _maxPageSize);
-        tasks[requests - 1] = GetTagsPageAsync(requests, rest);
+        var lastPage = ((requests - 1) / rest) + page;
+        tasks[requests - 1] = GetTagsPageAsync(lastPage, rest);
 
         await Task.WhenAll(tasks);
 

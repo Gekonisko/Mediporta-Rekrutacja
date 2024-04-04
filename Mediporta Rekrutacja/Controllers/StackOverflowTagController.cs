@@ -13,25 +13,36 @@ public class StackOverflowTagController : ControllerBase
         _stackOverflowAPIService = stackOverflowAPIService;
         _dbContext = dbContext;
         _logger = logger;
-        /*SaveTagsIntoDatabase(1000);*/
     }
 
     [HttpGet()]
-    public async Task<IActionResult> SaveTagsIntoDatabase([FromQuery(Name = "size")] int size = 1000)
+    public async Task<IActionResult> FillDatabaseWithTags([FromQuery(Name = "size")] int size = 1000)
     {
         _logger.Log(LogLevel.Debug, $"api/so/tags size={size}");
 
+        List<StackOverflowTag> tags = new ();
+
         try
         {
-            var tags = await _stackOverflowAPIService.GetTags(1, size);
-            await _dbContext.CreateTagTable(tags);
-            return Ok(tags);
+            int tagCount = await _dbContext.GetSizeOfTagTable();
 
+            double missingTags = size - tagCount;
+            if (missingTags > 0)
+            {
+                var page = (int)Math.Ceiling(tagCount / missingTags + 1);
+                tags = await _stackOverflowAPIService.GetTags(page, (int)missingTags);
+
+                await _dbContext.FillTagTable(tags, tagCount);
+
+                return Ok(tags);
+
+            }
+            return Ok("Databe is fulfilled");
         }
         catch
         {
             _logger.LogError("Failed to save tags into database");
         }
-        return BadRequest();
+        return BadRequest(tags);
     }
 }

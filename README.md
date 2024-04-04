@@ -30,6 +30,22 @@ paths:
       responses:
         "200":
           description: Success
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PercentageOfTags"
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PercentageOfTags"
+            text/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PercentageOfTags"
   /api/db/tags:
     get:
       tags:
@@ -60,6 +76,22 @@ paths:
       responses:
         "200":
           description: Success
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StackOverflowTag"
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StackOverflowTag"
+            text/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StackOverflowTag"
   /api/so/tags:
     get:
       tags:
@@ -74,5 +106,29 @@ paths:
       responses:
         "200":
           description: Success
-components: {}
+components:
+  schemas:
+    PercentageOfTags:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        count:
+          type: integer
+          format: int32
+        percentage:
+          type: number
+          format: double
+      additionalProperties: false
+    StackOverflowTag:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        count:
+          type: integer
+          format: int32
+      additionalProperties: false
 ```

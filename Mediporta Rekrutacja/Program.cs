@@ -30,6 +30,7 @@ try
     });
 
     builder.Services.AddSingleton<PostgresDatabaseService>();
+    builder.Services.AddSingleton<IDatabaseService>(p => p.GetRequiredService<PostgresDatabaseService>());
 
 
     var app = builder.Build();

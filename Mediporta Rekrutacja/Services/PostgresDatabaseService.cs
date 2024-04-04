@@ -1,6 +1,7 @@
 ﻿using Npgsql;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
-public class PostgresDatabaseService
+public class PostgresDatabaseService : IDatabaseService
 {
     private readonly ILogger<PostgresDatabaseService> _logger;
     private readonly DatabaseSettings _databaseSettings = new DatabaseSettings();
@@ -14,9 +15,35 @@ public class PostgresDatabaseService
         InitDatabaseSettings(_configuration);
     }
 
-    public async Task CreateTagTable(List<StackOverflowTag> tags)
+    public async Task<int> GetSizeOfTagTable()
     {
-        _logger.Log(LogLevel.Information, "CreateTagTable");
+        _logger.Log(LogLevel.Information, "GetSizeOfTagTable");
+
+        try
+        {
+            using (var conn = NpgsqlDataSource.Create(GetConnectionUrl()))
+            {
+                await conn.OpenConnectionAsync();
+                var cmd = conn.CreateCommand("select count(id) from tag");
+                using (var reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        return reader.GetInt32(0);
+                    }
+                }
+            }
+        }catch
+        {
+            _logger.LogError("Failed to get size of table Tag");
+            throw new Exception("Failed to get size of table Tag");
+        }
+        return 0;
+    }
+
+    public async Task FillTagTable(List<StackOverflowTag> tags, int startId)
+    {
+        _logger.Log(LogLevel.Information, "FillTagTable");
         try
         {
             using (var conn = NpgsqlDataSource.Create(GetConnectionUrl()))
@@ -24,24 +51,16 @@ public class PostgresDatabaseService
                 await conn.OpenConnectionAsync();
                 _logger.Log(LogLevel.Information, "Connected to database");
 
-                var cmd = conn.CreateCommand("TRUNCATE TABLE tag;");
-                await cmd.ExecuteNonQueryAsync();
-
-                _logger.Log(LogLevel.Information, "TRUNCATE table tag");
-
-
-                var id = 0;
-
                 var task = new List<Task>();
                 foreach (var tag in tags)
                 {
-                    cmd = conn.CreateCommand("INSERT INTO tag (id, name, count) VALUES (@id, @name, @count)");
-                    cmd.Parameters.AddWithValue("id", id++);
+                    var cmd = conn.CreateCommand("INSERT INTO tag (id, name, count) VALUES (@id, @name, @count)");
+                    cmd.Parameters.AddWithValue("id", startId++);
                     cmd.Parameters.AddWithValue("name", tag.Name);
                     cmd.Parameters.AddWithValue("count", tag.Count);
                     task.Add(cmd.ExecuteNonQueryAsync());
                 }
-
+    
                 await Task.WhenAll(task);
             }
         }

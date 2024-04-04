@@ -5,17 +5,17 @@ using Microsoft.Extensions.Logging;
 [Route("api/db/tags")]
 public class DatabaseTagController : ControllerBase
 {
-    private readonly PostgresDatabaseService _dbContext;
+    private readonly IDatabaseService _dbContext;
     private readonly ILogger<DatabaseTagController> _logger;
 
-    public DatabaseTagController(PostgresDatabaseService dbContext, ILogger<DatabaseTagController> logger)
+    public DatabaseTagController(IDatabaseService dbContext, ILogger<DatabaseTagController> logger)
     {
         _dbContext = dbContext;
         _logger = logger;
     }
 
     [HttpGet("count")]
-    public async Task<IActionResult> GetCountAsync([FromQuery(Name = "page")] int page = 1, [FromQuery(Name = "size")] int size = 20)
+    public async Task<ActionResult<List<PercentageOfTags>>> GetCountAsync([FromQuery(Name = "page")] int page = 1, [FromQuery(Name = "size")] int size = 20)
     {
         _logger.Log(LogLevel.Information, $"api/db/tags/count page={page} size={size}");
         try
@@ -26,12 +26,12 @@ public class DatabaseTagController : ControllerBase
         catch 
         {
             _logger.LogError("Failed to retrieve tags from database");
+            return BadRequest("Failed to retrieve tags from database");
         }
-        return BadRequest();
     }
 
     [HttpGet("")]
-    public async Task<IActionResult> GetTagsAsync([FromQuery(Name = "page")] int page = 1, [FromQuery(Name = "size")] int size = 20, [FromQuery(Name = "sort")] string sort = "id", [FromQuery(Name = "direction")] string direction = "asc")
+    public async Task<ActionResult<List<StackOverflowTag>>> GetTagsAsync([FromQuery(Name = "page")] int page = 1, [FromQuery(Name = "size")] int size = 20, [FromQuery(Name = "sort")] string sort = "id", [FromQuery(Name = "direction")] string direction = "asc")
     {
         _logger.Log(LogLevel.Information ,$"api/db/tags page={page} size={size} sort={sort} direction={direction}");
 
@@ -53,11 +53,9 @@ public class DatabaseTagController : ControllerBase
         catch
         {
             _logger.LogError("Failed to retrieve tags from database");
+            return BadRequest("Failed to retrieve tags from database");
+
         }
-
-        return BadRequest();
-
-        
     }
 
 }
