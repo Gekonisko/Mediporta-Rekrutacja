@@ -3,8 +3,6 @@ services:
   app:
     image: mediporta
     build:
-      tags: 
-        - mediporta
       context: ./Mediporta Rekrutacja
     environment:
       POSTGRES_HOST: postgres
